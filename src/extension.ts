@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { getRailsStructureSQL } from './core/preparation';
-import { getSQLStructure } from './core/parsing/parsing';
+import { getSQLStructure, StructureSingleton } from './core/parsing/parsing';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -34,6 +34,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 	});
 
+	registerTableParser();
+
 	context.subscriptions.push(disposable);
 	context.subscriptions.push(disposable2);
 }
@@ -41,3 +43,25 @@ export function activate(context: vscode.ExtensionContext) {
 // This method is called when your extension is deactivated
 export function deactivate() {}
 
+function registerTableParser() {
+	const fileWatcher = vscode.workspace.createFileSystemWatcher('**/db/structure.sql');
+	
+	fileWatcher.onDidChange(() => {
+		const newStructure = StructureSingleton.reparse();
+
+		if (!newStructure) {
+			return;
+		}
+
+		vscode.window.showInformationMessage('Database structure updated.');
+	});
+	
+	fileWatcher.onDidCreate(() => {
+		const newStructure = StructureSingleton.reparse();
+		if (!newStructure) {
+			return;
+		}
+
+		vscode.window.showInformationMessage('Database structure created.');
+	});
+}

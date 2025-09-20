@@ -1,5 +1,6 @@
 
 import { SQLDialect, SQLStructure } from "../../types/sql";
+import { getRailsStructureSQL } from "../preparation";
 import { SQLDialectParser } from "./dialects/dialect-parser";
 
 export function getSQLDialect(sql: string): SQLDialect | null {
@@ -18,4 +19,29 @@ export function getSQLStructure(sql: string): SQLStructure {
 
     const parser = new SQLDialectParser(dialect);
     return parser.parse(sql);
+}
+
+export class StructureSingleton {
+	private static instance: ReturnType<typeof getSQLStructure> | null = null;
+
+	static getInstance() {
+		if (!StructureSingleton.instance) {
+			const structureString = getRailsStructureSQL();
+			if (!structureString) {
+				return null;
+			}
+			StructureSingleton.instance = getSQLStructure(structureString);
+		}
+		return StructureSingleton.instance;
+	}
+
+    static reparse() {
+        const structureString = getRailsStructureSQL();
+        if (!structureString) {
+            return null;
+        }
+     
+        StructureSingleton.instance = getSQLStructure(structureString);
+        return StructureSingleton.instance;
+    }
 }
