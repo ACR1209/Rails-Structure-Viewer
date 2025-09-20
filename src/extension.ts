@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { StructureSingleton } from './core/parsing/parsing';
 import { SQLTreeProvider } from './core/rendering/tree-data-provider';
+import { TableNode } from './core/rendering/tree-item';
 
 let treeProvider: SQLTreeProvider;
 
@@ -28,8 +29,22 @@ export function activate(context: vscode.ExtensionContext) {
 		await vscode.commands.executeCommand('railsStructureView.focus');
 	});
 
+
+	const goToForeignTableCmd = vscode.commands.registerCommand(
+        'rails-structure-viewer.goToForeignTable',
+        (foreignKey: { referencesTable: string; referencesColumn: string }) => {
+
+            // Example: focus the table in your tree view
+            const tableNode = treeProvider?.findTable(foreignKey.referencesTable);
+            if (tableNode) {
+                treeProvider.revealTable(tableNode);
+            }
+        }
+    );
+
 	context.subscriptions.push(watcher);
 	context.subscriptions.push(disposableOpenTreeView);
+	context.subscriptions.push(goToForeignTableCmd);
 }
 
 // This method is called when your extension is deactivated

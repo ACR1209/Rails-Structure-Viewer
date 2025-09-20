@@ -26,5 +26,30 @@ export class SQLTreeProvider implements vscode.TreeDataProvider<vscode.TreeItem>
         }
         return Promise.resolve([]);
     }
+
+    findTable(name: string): TableNode | undefined {
+        const table = this.structure.tables.find(t => t.name === name);
+        return table ? new TableNode(table) : undefined;
+    }
+
+    async revealTable(tableNode: TableNode) {
+        const treeView = vscode.window.createTreeView('railsStructureView', { treeDataProvider: this });
+        await treeView.reveal(tableNode, { focus: true, select: true, expand: true });
+    }
+
+    getParent(element: vscode.TreeItem): vscode.ProviderResult<vscode.TreeItem> {
+        if (element instanceof ColumnNode) {
+            // find the table that contains this column
+            return this.structure.tables.find(t => t.columns.includes(element.column)) 
+                ? new TableNode(this.structure.tables.find(t => t.columns.includes(element.column))!)
+                : null;
+        }
+
+        if (element instanceof TableNode) {
+            return null; // top-level node has no parent
+        }
+
+        return null;
+    }
 }
 
