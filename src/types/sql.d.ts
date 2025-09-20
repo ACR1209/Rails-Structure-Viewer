@@ -9,6 +9,13 @@ export type SQLColumn = {
     isPrimaryKey: boolean;
     isNullable: boolean;
     defaultValue?: string;
+    foreignKey?: SQLForeignKey;
+};
+
+export type SQLForeignKey = {
+    column: string;
+    referencesTable: string;
+    referencesColumn: string;
 };
 
 export type SQLStructure = {
