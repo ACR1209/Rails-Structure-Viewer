@@ -5,7 +5,8 @@ import { ISQLDialectParser } from './dialect-parser';
 export class MySQLDialectParser implements ISQLDialectParser {
     parse(sql: string): SQLStructure {
         const tableRegex = /CREATE TABLE\s+`?(\w+)`?\s*\(([\s\S]*?)\)\s*ENGINE=/gi;
-        const columnRegex = /^\s*`?(\w+)`?\s+([\w()]+)(\s+NOT NULL)?/i;
+    const columnRegex = /^\s*`?(\w+)`?\s+([\w()]+)(\s+NOT NULL)?/i;
+    const defaultRegex = /DEFAULT\s+((?:'[^']*')|(?:"[^"]*")|(?:[\w.\-+]+))/i;
 
         const tables: SQLTable[] = [];
 
@@ -27,11 +28,22 @@ export class MySQLDialectParser implements ISQLDialectParser {
                 if (!colMatch) continue;
 
                 const [, colName, colType, notNull] = colMatch;
+
+                let defaultValue: string | undefined = undefined;
+                const defaultMatch = defaultRegex.exec(trimmed);
+                if (defaultMatch) {
+                    defaultValue = defaultMatch[1];
+                    if ((defaultValue.startsWith("'") && defaultValue.endsWith("'")) || (defaultValue.startsWith('"') && defaultValue.endsWith('"'))) {
+                        defaultValue = defaultValue.substring(1, defaultValue.length - 1);
+                    }
+                }
+
                 columns.push({
                     name: colName,
                     type: colType,
                     isPrimaryKey: false, // will be set later
                     isNullable: !notNull,
+                    ...(defaultValue !== undefined ? { defaultValue } : {}),
                 });
             }
 

@@ -8,6 +8,7 @@ export type SQLColumn = {
     type: string;
     isPrimaryKey: boolean;
     isNullable: boolean;
+    defaultValue?: string;
 };
 
 export type SQLStructure = {

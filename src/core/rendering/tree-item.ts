@@ -11,7 +11,7 @@ export class TableNode extends vscode.TreeItem {
 export class ColumnNode extends vscode.TreeItem {
     constructor(public column: SQLColumn) {
         super(
-            `${column.name}: ${column.type}${column.isPrimaryKey ? ' [PK]' : ''}${column.isNullable ? '' : ' [NOT NULL]'}`,
+            `${column.name}: ${column.type}${column.isPrimaryKey ? ' [PK]' : ''}${column.isNullable ? '' : ' [NOT NULL]'} ${column.defaultValue !== undefined ? ` [DEFAULT: ${column.defaultValue}]` : ''}`,
             vscode.TreeItemCollapsibleState.None
         );
         this.contextValue = 'column';
