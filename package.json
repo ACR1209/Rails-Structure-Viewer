@@ -14,14 +14,28 @@
   ],
   "main": "./dist/extension.js",
   "contributes": {
+    "viewsContainers": {
+    "activitybar": [
+        {
+          "id": "railsStructureSidebar",
+          "title": "Rails Structure",
+          "icon": "icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "railsStructureSidebar": [
+        {
+          "icon": "icon.svg",
+          "id": "railsStructureView",
+          "name": "Database Structure"
+        }
+      ]
+    },
     "commands": [
       {
-        "command": "rails-structure-viewer.helloWorld",
-        "title": "Hello World"
-      },
-      {
-        "command": "rails-structure-viewer.sayTablesName",
-        "title": "Say Tables Name"
+        "command": "rails-structure-viewer.openTreeView",
+        "title": "Open Rails Structure View"
       }
     ]
   },

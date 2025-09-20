@@ -1,67 +1,47 @@
 import * as vscode from 'vscode';
-import { getRailsStructureSQL } from './core/preparation';
-import { getSQLStructure, StructureSingleton } from './core/parsing/parsing';
+import { StructureSingleton } from './core/parsing/parsing';
+import { SQLTreeProvider } from './core/rendering/tree-data-provider';
+
+let treeProvider: SQLTreeProvider;
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+    const structure = StructureSingleton.getInstance();
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "rails-structure-viewer" is now active!');
+	if (!structure) {
+		return;
+	}
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('rails-structure-viewer.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from Rails Structure Viewer!');
+    treeProvider = new SQLTreeProvider(structure);
+
+	vscode.window.registerTreeDataProvider('railsStructureView', treeProvider);
+
+	// Watch for changes
+    const watcher = vscode.workspace.createFileSystemWatcher('**/db/structure.sql');
+    watcher.onDidChange(() => updateStructure());
+    watcher.onDidCreate(() => updateStructure());
+
+
+	const disposableOpenTreeView = vscode.commands.registerCommand('rails-structure-viewer.openTreeView', async () => {
+		await vscode.commands.executeCommand('workbench.view.explorer');
+		await vscode.commands.executeCommand('railsStructureView.focus');
 	});
 
-	const disposable2 = vscode.commands.registerCommand('rails-structure-viewer.sayTablesName', () => {
-		const structureString = getRailsStructureSQL();
-		
-		if (!structureString) {
-			return;
-		}
-
-		const structure = getSQLStructure(structureString);
-
-		structure.tables.forEach(table => {
-			vscode.window.showInformationMessage(`Table: ${table.name}`);
-		});
-
-	});
-
-	registerTableParser();
-
-	context.subscriptions.push(disposable);
-	context.subscriptions.push(disposable2);
+	context.subscriptions.push(watcher);
+	context.subscriptions.push(disposableOpenTreeView);
 }
 
 // This method is called when your extension is deactivated
 export function deactivate() {}
 
-function registerTableParser() {
-	const fileWatcher = vscode.workspace.createFileSystemWatcher('**/db/structure.sql');
-	
-	fileWatcher.onDidChange(() => {
-		const newStructure = StructureSingleton.reparse();
+function updateStructure() {
+    const newStructure = StructureSingleton.reparse();
+    
+	if (!treeProvider || !newStructure) {
+        return;
+    }
 
-		if (!newStructure) {
-			return;
-		}
-
-		vscode.window.showInformationMessage('Database structure updated.');
-	});
-	
-	fileWatcher.onDidCreate(() => {
-		const newStructure = StructureSingleton.reparse();
-		if (!newStructure) {
-			return;
-		}
-
-		vscode.window.showInformationMessage('Database structure created.');
-	});
+    treeProvider.refresh(newStructure);
+    vscode.window.showInformationMessage('Database structure updated!');
 }

@@ -1,0 +1,19 @@
+import * as vscode from 'vscode';
+import { SQLColumn, SQLTable } from '../../types/sql';
+
+export class TableNode extends vscode.TreeItem {
+    constructor(public table: SQLTable) {
+        super(table.name, vscode.TreeItemCollapsibleState.Collapsed);
+        this.contextValue = 'table';
+    }
+}
+
+export class ColumnNode extends vscode.TreeItem {
+    constructor(public column: SQLColumn) {
+        super(
+            `${column.name}: ${column.type}${column.isPrimaryKey ? ' [PK]' : ''}${column.isNullable ? '' : ' [NOT NULL]'}`,
+            vscode.TreeItemCollapsibleState.None
+        );
+        this.contextValue = 'column';
+    }
+}
