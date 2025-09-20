@@ -15,12 +15,13 @@ export class MySQLDialectParser implements ISQLDialectParser {
             const columns: SQLColumn[] = [];
 
             const lines = columnsDef.split(/,\r?\n/);
+
+            // First pass: parse columns
             for (const line of lines) {
                 const trimmed = line.trim();
 
-                if (/^(PRIMARY|UNIQUE|KEY|CONSTRAINT)/i.test(trimmed)) {
-                    continue;
-                }
+                // Skip constraints
+                if (/^(PRIMARY|UNIQUE|KEY|CONSTRAINT)/i.test(trimmed)) continue;
 
                 const colMatch = columnRegex.exec(trimmed);
                 if (!colMatch) continue;
@@ -29,9 +30,26 @@ export class MySQLDialectParser implements ISQLDialectParser {
                 columns.push({
                     name: colName,
                     type: colType,
-                    isPrimaryKey: /PRIMARY KEY/i.test(trimmed),
+                    isPrimaryKey: false, // will be set later
                     isNullable: !notNull,
                 });
+            }
+
+            // Second pass: in order to detect primary key definitions
+            for (const line of lines) {
+                const trimmed = line.trim();
+                const pkMatch = /^PRIMARY KEY\s*\((.+?)\)/i.exec(trimmed);
+                if (!pkMatch) continue;
+
+                const pkColumns = pkMatch[1]
+                    .split(',')
+                    .map(c => c.replace(/`/g, '').trim());
+
+                for (const col of columns) {
+                    if (pkColumns.includes(col.name)) {
+                        col.isPrimaryKey = true;
+                    }
+                }
             }
 
             tables.push({ name: tableName, columns });
