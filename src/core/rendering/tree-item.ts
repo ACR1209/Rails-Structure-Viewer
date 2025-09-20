@@ -5,6 +5,7 @@ export class TableNode extends vscode.TreeItem {
     constructor(public table: SQLTable) {
         super(table.name, vscode.TreeItemCollapsibleState.Collapsed);
         this.contextValue = 'table';
+        this.iconPath = new vscode.ThemeIcon('table');
     }
 }
 
