@@ -1,6 +1,6 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import { getRailsStructureSQL } from './core/preparation';
+import { getSQLStructure } from './core/parsing/parsing';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -19,8 +19,25 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.showInformationMessage('Hello World from Rails Structure Viewer!');
 	});
 
+	const disposable2 = vscode.commands.registerCommand('rails-structure-viewer.sayTablesName', () => {
+		const structureString = getRailsStructureSQL();
+		
+		if (!structureString) {
+			return;
+		}
+
+		const structure = getSQLStructure(structureString);
+
+		structure.tables.forEach(table => {
+			vscode.window.showInformationMessage(`Table: ${table.name}`);
+		});
+
+	});
+
 	context.subscriptions.push(disposable);
+	context.subscriptions.push(disposable2);
 }
 
 // This method is called when your extension is deactivated
 export function deactivate() {}
+
