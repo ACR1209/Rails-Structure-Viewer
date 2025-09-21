@@ -22,4 +22,4 @@ export type SQLStructure = {
     tables: SQLTable[];
 };
 
-export type SQLDialect = 'mysql';
+export type SQLDialect = 'mysql' | 'postgres';

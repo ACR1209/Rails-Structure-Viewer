@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import { StructureSingleton } from './core/parsing/parsing';
 import { SQLTreeProvider } from './core/rendering/tree-data-provider';
-import { TableNode } from './core/rendering/tree-item';
 
 let treeProvider: SQLTreeProvider;
 
@@ -9,7 +8,6 @@ let treeProvider: SQLTreeProvider;
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
     const structure = StructureSingleton.getInstance();
-
 	if (!structure) {
 		return;
 	}

@@ -2,12 +2,15 @@
 import { SQLDialect, SQLStructure } from "../../types/sql";
 import { getRailsStructureSQL } from "../preparation";
 import { SQLDialectParser } from "./dialects/dialect-parser";
+import * as vscode from 'vscode';
 
 export function getSQLDialect(sql: string): SQLDialect | null {
     if (sql.includes('CREATE TABLE') && sql.includes('ENGINE=')) {
         return 'mysql';
     }
-
+    if (sql.includes('CREATE TABLE') && sql.match(/\bOWNER TO\b|\bSET search_path\b|\bpublic\./i)) {
+        return 'postgres';
+    }
     return null;
 }
 
