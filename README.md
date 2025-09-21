@@ -5,7 +5,7 @@ Extension to visualize the structure of your Rails application's structure.sql d
 ## Features
 
 - List all your database tables present in the structure.sql
-  <img width="1591" height="852" alt="image" src="https://github.com/user-attachments/assets/82d549f6-b179-4532-a52b-185d1ddb3b8e" />
+  <img width="795" height="426" alt="image" src="https://github.com/user-attachments/assets/82d549f6-b179-4532-a52b-185d1ddb3b8e" />
 - Allows to quickly glance at primary keys, foreign keys, data types and defaults.
 
 
