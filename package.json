@@ -2,9 +2,20 @@
   "name": "rails-structure-viewer",
   "displayName": "Rails Structure Viewer",
   "description": "Visualize the structure of your Rails application's structure.sql directly within VS Code.",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "engines": {
     "vscode": "^1.104.0"
+  },
+  "license": "MIT",
+  "publisher": "ACR1209",
+  "author": {
+    "name": "Andrés Alejandro Coronel Rodrigues",
+    "email": "andrescoronel1209@gmail.com",
+    "url": "https://github.com/ACR1209"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ACR1209/Rails-Structure-Viewer"
   },
   "categories": [
     "Visualization",
