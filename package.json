@@ -37,8 +37,8 @@
       "activitybar": [
         {
           "id": "railsStructureSidebar",
-          "title": "Rails Structure",
-          "icon": "icon.svg"
+          "title": "Rails Structure Viewer",
+          "icon": "media/logos/logo-dark.png"
         }
       ]
     },
