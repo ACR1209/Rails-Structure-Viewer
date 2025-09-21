@@ -2,7 +2,7 @@
   "name": "rails-structure-viewer",
   "displayName": "Rails Structure Viewer",
   "description": "Visualize the structure of your Rails application's structure.sql directly within VS Code.",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "engines": {
     "vscode": "^1.104.0"
   },
