@@ -42,9 +42,15 @@ export function activate(context: vscode.ExtensionContext) {
         }
     );
 
-	context.subscriptions.push(watcher);
-	context.subscriptions.push(disposableOpenTreeView);
-	context.subscriptions.push(goToForeignTableCmd);
+    const refreshCmd = vscode.commands.registerCommand('rails-structure-viewer.refreshStructure', () => {
+		console.log('Refreshing structure...');
+		updateStructure();
+    });
+
+    context.subscriptions.push(watcher);
+    context.subscriptions.push(disposableOpenTreeView);
+    context.subscriptions.push(goToForeignTableCmd);
+    context.subscriptions.push(refreshCmd);
 }
 
 // This method is called when your extension is deactivated
