@@ -3,25 +3,19 @@ import { ISQLDialectParser } from './dialect-parser';
 
 export class PostgresDialectParser implements ISQLDialectParser {
     parse(sql: string): SQLStructure {
-        // Regex for CREATE TABLE and columns
         const tableRegex = /CREATE TABLE\s+(?:IF NOT EXISTS\s+)?("?[\w\.]+"?)\s*\(([\s\S]*?)\);/gi;
-
-        // Capture type lazily, stop before DEFAULT or NOT NULL
         const columnRegex = /^\s*"?(?<name>\w+)"?\s+(?<type>.+?)(?:\s+DEFAULT\s+(?<default>.+?))?(?:\s+(?<notnull>NOT NULL))?\s*$/i;
-
-        const foreignKeyRegex = /(?:CONSTRAINT\s+"?[\w]+"?\s+)?FOREIGN KEY\s*\(([^)]+)\)\s+REFERENCES\s+"?([\w\.]+)"?\s*\(([^)]+)\)/i;
-
         const tables: SQLTable[] = [];
 
-        // --- Step 1: Parse CREATE TABLE ---
         let tableMatch;
         while ((tableMatch = tableRegex.exec(sql)) !== null) {
             const [, tableNameRaw, columnsDef] = tableMatch;
             const tableName = tableNameRaw.replace(/"/g, '').replace('public.', '');
             const columns: SQLColumn[] = [];
-            const lines = columnsDef.split(/,\r?\n/);
             const constraintLines: string[] = [];
+            const lines = columnsDef.split(/,\r?\n/);
 
+            // First pass: parse columns and collect table-level constraints
             for (const line of lines) {
                 const trimmed = line.trim();
 
@@ -33,11 +27,34 @@ export class PostgresDialectParser implements ISQLDialectParser {
                 const colMatch = columnRegex.exec(trimmed);
                 if (!colMatch || !colMatch.groups) continue;
 
-                const { name: colName, type: colTypeRaw, notnull, default: defaultValueRaw } = colMatch.groups;
+                let { name: colName, type: colTypeRaw, notnull, default: defaultValueRaw } = colMatch.groups;
+                let colType = colTypeRaw.trim();
 
-                const colType = colTypeRaw.trim();
+                // Inline PRIMARY KEY
+                let isPrimaryKey = false;
+                if (/PRIMARY\s+KEY/i.test(colType)) {
+                    isPrimaryKey = true;
+                    colType = colType.replace(/PRIMARY\s+KEY/i, '').trim();
+                }
 
-                // Clean default value to remove quotes and type casts
+                // Inline FOREIGN KEY
+                let foreignKey;
+                const fkInlineMatch = colType.match(/REFERENCES\s+"?([\w\.]+)"?\s*\(([\w,\s]+)\)/i);
+                if (fkInlineMatch) {
+                    const [, refTableRaw, refColsRaw] = fkInlineMatch;
+                    const refTable = refTableRaw.replace('public.', '');
+                    const refCols = refColsRaw.split(',').map(c => c.trim());
+
+                    foreignKey = {
+                        column: colName,
+                        referencesTable: refTable,
+                        referencesColumn: refCols[0], // usually one column inline
+                    };
+
+                    colType = colType.replace(fkInlineMatch[0], '').trim();
+                }
+
+                // Clean default value
                 let defaultValue = defaultValueRaw;
                 if (defaultValue) {
                     defaultValue = defaultValue.trim();
@@ -51,15 +68,18 @@ export class PostgresDialectParser implements ISQLDialectParser {
                 columns.push({
                     name: colName,
                     type: colType,
-                    isPrimaryKey: false,
+                    isPrimaryKey,
                     isNullable: !notnull,
                     ...(defaultValue ? { defaultValue } : {}),
+                    ...(foreignKey ? { foreignKey } : {}),
                 });
             }
 
-            for (const trimmed of constraintLines) {
-                const fkMatch = foreignKeyRegex.exec(trimmed);
-                if (fkMatch) {
+            // Process table-level foreign keys from CREATE TABLE constraints
+            const fkRegex = /FOREIGN KEY\s*\(([^)]+)\)\s+REFERENCES\s+"?([\w\.]+)"?\s*\(([^)]+)\)/gi;
+            for (const constraint of constraintLines) {
+                let fkMatch;
+                while ((fkMatch = fkRegex.exec(constraint)) !== null) {
                     const [, fkColsRaw, refTableRaw, refColsRaw] = fkMatch;
                     const fkCols = fkColsRaw.split(',').map(c => c.replace(/"/g, '').trim());
                     const refCols = refColsRaw.split(',').map(c => c.replace(/"/g, '').trim());
@@ -81,7 +101,7 @@ export class PostgresDialectParser implements ISQLDialectParser {
             tables.push({ name: tableName, columns });
         }
 
-        // --- Step 2: Handle PRIMARY KEYs added via ALTER TABLE ---
+        // Handle PRIMARY KEYs added via ALTER TABLE
         const pkRegex = /ALTER TABLE ONLY "?([\w\.]+)"?\s+ADD CONSTRAINT "?[\w]+"?\s+PRIMARY KEY\s*\(([^)]+)\)/gi;
         let pkMatch;
         while ((pkMatch = pkRegex.exec(sql)) !== null) {
@@ -96,7 +116,7 @@ export class PostgresDialectParser implements ISQLDialectParser {
             });
         }
 
-        // --- Step 3: Handle FOREIGN KEYs added via ALTER TABLE ---
+        // Handle FOREIGN KEYs added via ALTER TABLE
         const alterFkRegex = /ALTER TABLE ONLY "?([\w\.]+)"?\s+ADD CONSTRAINT "?[\w]+"?\s+FOREIGN KEY\s*\(([^)]+)\)\s+REFERENCES\s+"?([\w\.]+)"?\s*\(([^)]+)\)/gi;
         let alterFkMatch;
         while ((alterFkMatch = alterFkRegex.exec(sql)) !== null) {
