@@ -1,21 +1,29 @@
 {
   "name": "rails-structure-viewer",
   "displayName": "Rails Structure Viewer",
-  "description": "",
+  "description": "Visualize the structure of your Rails application's structure.sql directly within VS Code.",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.104.0"
   },
   "categories": [
+    "Visualization",
     "Other"
   ],
   "activationEvents": [
-    "onStartupFinished"
+    "onView:railsStructureSidebar"
   ],
   "main": "./dist/extension.js",
   "contributes": {
+    "keybindings": [
+			{
+				"command": "rails-structure-viewer.openTreeView",
+				"key": "ctrl+alt+s",
+				"mac": "cmd+ctrl+s"
+			}
+		],
     "viewsContainers": {
-    "activitybar": [
+      "activitybar": [
         {
           "id": "railsStructureSidebar",
           "title": "Rails Structure",
