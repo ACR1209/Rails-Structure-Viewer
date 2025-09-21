@@ -17,13 +17,13 @@ export class SQLDialectParser {
 		   switch (dialect) {
 			   case 'mysql': {
 				   // Lazy import to avoid circular dependency
-				   // eslint-disable-next-line @typescript-eslint/no-var-requires
+				    
 				   const { MySQLDialectParser } = require('./mysql-parser');
 				   this.parser = new MySQLDialectParser();
 				   break;
 			   }
 			   case 'postgres': {
-				   // eslint-disable-next-line @typescript-eslint/no-var-requires
+				    
 				   const { PostgresDialectParser } = require('./postgres-parser');
 				   this.parser = new PostgresDialectParser();
 				   break;

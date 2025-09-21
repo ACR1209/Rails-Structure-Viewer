@@ -25,7 +25,7 @@ export class PostgresDialectParser implements ISQLDialectParser {
                 }
 
                 const colMatch = columnRegex.exec(trimmed);
-                if (!colMatch || !colMatch.groups) continue;
+                if (!colMatch || !colMatch.groups) {continue;}
 
                 let { name: colName, type: colTypeRaw, notnull, default: defaultValueRaw } = colMatch.groups;
                 let colType = colTypeRaw.trim();
@@ -108,11 +108,11 @@ export class PostgresDialectParser implements ISQLDialectParser {
             const [, tableNameRaw, colsRaw] = pkMatch;
             const tableName = tableNameRaw.replace('public.', '');
             const table = tables.find(t => t.name === tableName);
-            if (!table) continue;
+            if (!table) {continue;}
 
             const pkCols = colsRaw.split(',').map(c => c.replace(/"/g, '').trim());
             table.columns.forEach(col => {
-                if (pkCols.includes(col.name)) col.isPrimaryKey = true;
+                if (pkCols.includes(col.name)) {col.isPrimaryKey = true;}
             });
         }
 
@@ -123,7 +123,7 @@ export class PostgresDialectParser implements ISQLDialectParser {
             const [, tableNameRaw, fkColsRaw, refTableRaw, refColsRaw] = alterFkMatch;
             const tableName = tableNameRaw.replace('public.', '');
             const table = tables.find(t => t.name === tableName);
-            if (!table) continue;
+            if (!table) {continue;}
 
             const fkCols = fkColsRaw.split(',').map(c => c.replace(/"/g, '').trim());
             const refCols = refColsRaw.split(',').map(c => c.replace(/"/g, '').trim());

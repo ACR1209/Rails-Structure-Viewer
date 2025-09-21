@@ -28,7 +28,7 @@ export class MySQLDialectParser implements ISQLDialectParser {
                 }
 
                 const colMatch = columnRegex.exec(trimmed);
-                if (!colMatch) continue;
+                if (!colMatch) {continue;}
 
                 const [, colName, colType, notNull] = colMatch;
 

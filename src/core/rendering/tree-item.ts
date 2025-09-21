@@ -18,10 +18,10 @@ export class ColumnNode extends vscode.TreeItem {
         this.contextValue = 'column';
 
         const badges: string[] = [];
-        if (column.isPrimaryKey) badges.push('PK');
-        if (!column.isNullable) badges.push('NOT NULL');
-        if (column.defaultValue !== undefined) badges.push(`DEFAULT: ${column.defaultValue}`);
-        if (column.foreignKey) badges.push(`FK: ${column.foreignKey.referencesTable}.${column.foreignKey.referencesColumn}`);
+        if (column.isPrimaryKey) {badges.push('PK');}
+        if (!column.isNullable) {badges.push('NOT NULL');}
+        if (column.defaultValue !== undefined) {badges.push(`DEFAULT: ${column.defaultValue}`);}
+        if (column.foreignKey) {badges.push(`FK: ${column.foreignKey.referencesTable}.${column.foreignKey.referencesColumn}`);}
         if (badges.length) {
             this.label = `${this.label} [${badges.join(', ')}]`;
         }
