@@ -8,6 +8,7 @@
   },
   "license": "MIT",
   "publisher": "ACR1209",
+  "icon": "media/logos/logo-full-color.png",
   "author": {
     "name": "Andrés Alejandro Coronel Rodrigues",
     "email": "andrescoronel1209@gmail.com",
